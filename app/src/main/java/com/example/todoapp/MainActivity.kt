@@ -39,7 +39,6 @@ fun ToDoApp(repository: ToDoRepository) {
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    // Scaffold component for the add task dialog
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(onClick = { showDialog = true }) {
@@ -60,10 +59,10 @@ fun ToDoApp(repository: ToDoRepository) {
             // Incomplete Tasks Header
             Text("Incomplete Tasks", style = MaterialTheme.typography.titleLarge)
             tasks.filter { !it.completed }.forEach { task ->
-                TaskRow(task, repository) {
+                TaskRow(task, repository) { message ->
                     tasks = repository.getAllTasks()
                     coroutineScope.launch {
-                        snackbarHostState.showSnackbar("Task marked as completed")
+                        snackbarHostState.showSnackbar(message)
                     }
                 }
             }
@@ -73,10 +72,10 @@ fun ToDoApp(repository: ToDoRepository) {
             // Completed Tasks Header
             Text("Completed Tasks", style = MaterialTheme.typography.titleLarge)
             tasks.filter { it.completed }.forEach { task ->
-                TaskRow(task, repository) {
+                TaskRow(task, repository) { message ->
                     tasks = repository.getAllTasks()
                     coroutineScope.launch {
-                        snackbarHostState.showSnackbar("Task marked as incomplete")
+                        snackbarHostState.showSnackbar(message)
                     }
                 }
             }
@@ -116,8 +115,7 @@ fun ToDoApp(repository: ToDoRepository) {
 }
 
 @Composable
-// TaskRow component to display a single task
-fun TaskRow(task: ToDoItem, repository: ToDoRepository, onTaskUpdated: () -> Unit) {
+fun TaskRow(task: ToDoItem, repository: ToDoRepository, onTaskUpdated: (String) -> Unit) {
     Row(modifier = Modifier
         .fillMaxWidth()
         .padding(vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
@@ -127,12 +125,13 @@ fun TaskRow(task: ToDoItem, repository: ToDoRepository, onTaskUpdated: () -> Uni
                 checked = task.completed,
                 onCheckedChange = {
                     repository.markTaskCompleted(task.id, it)
-                    onTaskUpdated()
+                    val message = if (it) "Task marked as completed" else "Task marked as incomplete"
+                    onTaskUpdated(message)
                 }
             )
             IconButton(onClick = {
                 repository.deleteTask(task.id)
-                onTaskUpdated()
+                onTaskUpdated("Task deleted")
             }) {
                 Icon(Icons.Default.Delete, contentDescription = "Delete Task")
             }
