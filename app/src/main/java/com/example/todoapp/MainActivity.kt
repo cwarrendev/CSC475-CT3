@@ -76,7 +76,7 @@ fun ToDoApp(repository: ToDoRepository) {
                 TaskRow(task, repository) {
                     tasks = repository.getAllTasks()
                     coroutineScope.launch {
-                        snackbarHostState.showSnackbar("Task completed")
+                        snackbarHostState.showSnackbar("Task marked as incomplete")
                     }
                 }
             }
